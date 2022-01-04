@@ -89,6 +89,7 @@ def train():
             loss_train += loss.item()
             pred = out.max(dim=1)[1]
             print("pred: ", pred)
+            print("labels: ", targets)
             correct += pred.eq(targets).sum().item()
             print("correct: ", correct)
         acc_train = correct / len(train_loader.dataset)
