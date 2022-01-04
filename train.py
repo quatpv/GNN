@@ -11,6 +11,7 @@ from dataset.loader import get_training_set, get_validation_set, get_test_set
 # from torch_geometric.loader import DataLoader
 # from torch_geometric.datasets import TUDataset
 from pprint import pprint
+from tqdm import tqdm
 
 parser = argparse.ArgumentParser()
 
@@ -77,7 +78,7 @@ def train():
     for epoch in range(args.epochs):
         loss_train = 0.0
         correct = 0
-        for i, (inputs, targets, index) in enumerate(train_loader):
+        for i, (inputs, targets, index) in tqdm(enumerate(train_loader)):
             optimizer.zero_grad()
             inputs = inputs.to(args.device)
             targets = targets.to(args.device)
