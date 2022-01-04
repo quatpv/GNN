@@ -16,7 +16,7 @@ parser = argparse.ArgumentParser()
 
 # For GNN
 parser.add_argument('--seed', type=int, default=7497, help='random seed')
-parser.add_argument('--batch_size', type=int, default=2, help='batch size')
+parser.add_argument('--batch_size', type=int, default=8, help='batch size')
 parser.add_argument('--lr', type=float, default=0.001, help='learning rate')
 parser.add_argument('--weight_decay', type=float, default=0.001, help='weight decay')
 parser.add_argument('--nhid', type=int, default=128, help='hidden size')

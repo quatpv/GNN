@@ -5,6 +5,7 @@ from torch_geometric.nn import global_mean_pool as gap, global_max_pool as gmp
 from torch_geometric.nn import GCNConv
 from efficientnet_pytorch import EfficientNet
 from torch_geometric.data import Data
+import numpy as np
 
 from layers import GCN, HGPSLPool
 
@@ -39,8 +40,11 @@ class Model(torch.nn.Module):
         self.lin3 = torch.nn.Linear(self.nhid // 2, self.num_classes)
 
     def build_graph(self, data):
-        source      = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
-        destination = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
+        source = torch.tensor([np.array(range(self.num_nodes)) + i*self.num_nodes for i in range(self.args.batch_size)])
+        destination = source + 1
+        source = source.view(-1).tolist()[:-1]
+        destination = destination.view(-1).tolist()[:-1]
+
         edge_index = torch.tensor([source, destination], dtype=torch.long).to(self.args.device)
         x = data
         batch = torch.tensor([[i]*self.num_nodes for i in range(self.args.batch_size)])
