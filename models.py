@@ -3,7 +3,6 @@ import torch.nn.functional as F
 import torch.nn as nn
 from torch_geometric.nn import global_mean_pool as gap, global_max_pool as gmp
 from torch_geometric.nn import GCNConv
-from torchvision.models import efficientnet_b0
 from efficientnet_pytorch import EfficientNet
 from torch_geometric.data import Data
 
@@ -42,10 +41,10 @@ class Model(torch.nn.Module):
     def build_graph(self, data):
         source      = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
         destination = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
-        edge_index = torch.tensor([source, destination], dtype=torch.long)
+        edge_index = torch.tensor([source, destination], dtype=torch.long).to(self.args.device)
         x = data
         batch = torch.tensor([[i]*self.num_nodes for i in range(self.args.batch_size)])
-        batch = batch.view(-1)
+        batch = batch.view(-1).to(self.args.device)
         return x, edge_index, batch
 
     def forward(self, data):
