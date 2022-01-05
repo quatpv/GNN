@@ -40,7 +40,7 @@ class Model(torch.nn.Module):
         self.lin3 = torch.nn.Linear(self.nhid // 2, self.num_classes)
 
     def build_graph(self, data):
-        source = torch.tensor([np.array(range(self.num_nodes)) + i*self.num_nodes for i in range(self.args.batch_size)])
+        source = torch.tensor(np.array([np.array(range(self.num_nodes)) + i*self.num_nodes for i in range(self.args.batch_size)]))
         destination = source + 1
         source = source.view(-1).tolist()[:-1]
         destination = destination.view(-1).tolist()[:-1]
@@ -61,9 +61,6 @@ class Model(torch.nn.Module):
 
         # convert to geometric Data structure
         x, edge_index, batch = self.build_graph(data)
-        # print("x: ", x.shape)
-        # print("edge_index: ", edge_index.shape)
-        # print("batch: ", batch.shape)
         edge_attr = None
 
         x = F.relu(self.conv1(x, edge_index, edge_attr))

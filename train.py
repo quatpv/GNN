@@ -25,7 +25,7 @@ parser.add_argument('--sample_neighbor', type=bool, default=True, help='whether 
 parser.add_argument('--sparse_attention', type=bool, default=True, help='whether use sparse attention')
 parser.add_argument('--structure_learning', type=bool, default=True, help='whether perform structure learning')
 parser.add_argument('--pooling_ratio', type=float, default=0.5, help='pooling ratio')
-parser.add_argument('--dropout_ratio', type=float, default=0.0, help='dropout ratio')
+parser.add_argument('--dropout_ratio', type=float, default=0.3, help='dropout ratio')
 parser.add_argument('--lamb', type=float, default=1.0, help='trade-off parameter')
 parser.add_argument('--dataset', type=str, default='ucf101', help='dataset name')
 parser.add_argument('--device', type=str, default='cpu', help='specify cuda devices')
@@ -33,7 +33,7 @@ parser.add_argument('--epochs', type=int, default=2, help='maximum number of epo
 parser.add_argument('--patience', type=int, default=100, help='patience for early stopping')
 
 parser.add_argument('--num_classes', type=int, default=101, help='number of classes')
-parser.add_argument('--num_features', type=int, default=1024, help='number of features')
+parser.add_argument('--num_features', type=int, default=512, help='number of features')
 
 # For video streaming
 parser.add_argument('--video_path', type=str, default='dataraw/UCF-101/video', help='path to video file')
@@ -50,6 +50,14 @@ if torch.cuda.is_available():
     torch.cuda.manual_seed(args.seed)
 
 
+model = Model(args).to(args.device)
+pprint(vars(model))
+pytorch_total_params = sum(p.numel() for p in model.parameters())
+print("number parameters: ", pytorch_total_params)
+
+# 1/0
+optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+
 training_data = get_training_set(args)
 train_loader = DataLoader(training_data,
                           batch_size=args.batch_size,
@@ -64,8 +72,7 @@ val_loader = DataLoader(validation_data,
                         shuffle=False,
                         pin_memory=True)
 
-model = Model(args).to(args.device)
-optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+
 
 def train():
     min_loss = 1e10
