@@ -6,6 +6,9 @@ import json
 import copy
 import random
 
+import numpy as np
+from tqdm import tqdm
+
 from dataset.decoder import decode
 from dataset.transform import (random_short_side_scale_jitter,
                                 random_crop, horizontal_flip,
@@ -115,6 +118,16 @@ class UcfHmdb(data.Dataset):
             self._dataset_name, len(self._data)))
 
     def __getitem__(self, index):
+        for _ in range(self._num_retries):
+            if self._testing:
+                target = self._data[index]['video_id']
+            else:
+                target = self._data[index]['label']
+            frames = torch.load(f"dataraw/UCF-101/pt/{self._data[index]['video_id']}.pt")
+            return (frames, target, index)
+        
+        
+    def __getitem_old__(self, index):
         """
         Args:
             index (int): Index
@@ -122,7 +135,7 @@ class UcfHmdb(data.Dataset):
             tuple: (image, target) where target is class_index of the target class.
         """
         path = self._data[index]['video_path']
-
+        
         if not self._testing:
             temporal_sample_index = -1
             spatial_sample_index = -1
@@ -181,6 +194,7 @@ class UcfHmdb(data.Dataset):
                 target = self._data[index]['video_id']
             else:
                 target = self._data[index]['label']
+            torch.save(frames, f"dataraw/UCF-101/pt/{self._data[index]['video_id']}.pt")
             return (frames, target, index)
 
     def spatial_sampling(self,
@@ -242,7 +256,7 @@ if __name__ == '__main__':
     training_data = UcfHmdb('UCF101',
                             video_path,
                             dataset_file,
-                            'training',
+                            'validation',
                             testing=False,
                             num_frames=sample_duration // stride_size,
                             sample_stride=stride_size,
@@ -250,21 +264,21 @@ if __name__ == '__main__':
                             n_samples_for_each_frame=1,
                             crop_size=sample_size)
     print(len(training_data))
-    # for inputs, targets, _ in training_data:
+
+    for inputs, targets, _ in tqdm(training_data):
         # print("inputs: ", inputs)
         # print("targets: ", targets)
+        pass
 
-    train_loader = torch.utils.data.DataLoader(
-        training_data,
-        batch_size=2,
-        shuffle=True,
-        pin_memory=True,
-        drop_last=True,
-        sampler=None)    
-    
-    for i, (inputs, targets, index) in enumerate(train_loader):
-        print(targets)
-        1/0
+    # train_loader = torch.utils.data.DataLoader(
+    #     training_data,
+    #     batch_size=16,
+    #     shuffle=True,
+    #     pin_memory=True,
+    #     drop_last=True,
+    #     sampler=None)    
+    # for i, (inputs, targets, index) in enumerate(train_loader):
+    #     print(targets)
 
-    pprint(vars(train_loader))
+    # pprint(vars(train_loader))
     

@@ -28,8 +28,8 @@ parser.add_argument('--pooling_ratio', type=float, default=0.5, help='pooling ra
 parser.add_argument('--dropout_ratio', type=float, default=0.3, help='dropout ratio')
 parser.add_argument('--lamb', type=float, default=1.0, help='trade-off parameter')
 parser.add_argument('--dataset', type=str, default='ucf101', help='dataset name')
-parser.add_argument('--device', type=str, default='cpu', help='specify cuda devices')
-parser.add_argument('--epochs', type=int, default=2, help='maximum number of epochs')
+parser.add_argument('--device', type=str, default='cuda:0', help='specify cuda devices')
+parser.add_argument('--epochs', type=int, default=50, help='maximum number of epochs')
 parser.add_argument('--patience', type=int, default=100, help='patience for early stopping')
 
 parser.add_argument('--num_classes', type=int, default=101, help='number of classes')
@@ -50,14 +50,6 @@ if torch.cuda.is_available():
     torch.cuda.manual_seed(args.seed)
 
 
-model = Model(args).to(args.device)
-pprint(vars(model))
-pytorch_total_params = sum(p.numel() for p in model.parameters())
-print("number parameters: ", pytorch_total_params)
-
-# 1/0
-optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-
 training_data = get_training_set(args)
 train_loader = DataLoader(training_data,
                           batch_size=args.batch_size,
@@ -70,8 +62,26 @@ validation_data = get_validation_set(args)
 val_loader = DataLoader(validation_data,
                         batch_size=args.batch_size,
                         shuffle=False,
+                        drop_last=True,
                         pin_memory=True)
 
+model = Model(args).to(args.device)
+optimizer = torch.optim.SGD(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+
+
+def compute_test(loader):
+    model.eval()
+    correct = 0.0
+    loss_test = 0.0
+    for i, (inputs, targets, index) in tqdm(enumerate(loader)):
+        inputs = inputs.to(args.device)
+        targets = targets.to(args.device)
+        
+        out = model(inputs)
+        pred = out.max(dim=1)[1]
+        correct += pred.eq(targets).sum().item()
+        loss_test += F.nll_loss(out, targets).item()
+    return correct / len(loader.dataset), loss_test
 
 
 def train():
@@ -96,10 +106,9 @@ def train():
             optimizer.step()
             loss_train += loss.item()
             pred = out.max(dim=1)[1]
-            print("pred: ", pred)
-            print("labels: ", targets)
-            correct += pred.eq(targets).sum().item()
-            print("correct: ", correct)
+            iter_correct = pred.eq(targets).sum().item()
+            correct += iter_correct
+
         acc_train = correct / len(train_loader.dataset)
         acc_val, loss_val = compute_test(val_loader)
         print('Epoch: {:04d}'.format(epoch + 1), 'loss_train: {:.6f}'.format(loss_train),
@@ -134,17 +143,7 @@ def train():
     return best_epoch
 
 
-def compute_test(loader):
-    model.eval()
-    correct = 0.0
-    loss_test = 0.0
-    for data in loader:
-        data = data.to(args.device)
-        out = model(data)
-        pred = out.max(dim=1)[1]
-        correct += pred.eq(data.y).sum().item()
-        loss_test += F.nll_loss(out, data.y).item()
-    return correct / len(loader.dataset), loss_test
+
 
 
 if __name__ == '__main__':
