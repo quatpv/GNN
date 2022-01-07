@@ -12,6 +12,9 @@ from dataset.loader import get_training_set, get_validation_set, get_test_set
 # from torch_geometric.datasets import TUDataset
 from pprint import pprint
 from tqdm import tqdm
+from utils.logger import init_log
+
+logger = init_log(logname=__name__, filename="logs/ucf_5_class.log", console = True)
 
 parser = argparse.ArgumentParser()
 
@@ -111,9 +114,7 @@ def train():
 
         acc_train = correct / len(train_loader.dataset)
         acc_val, loss_val = compute_test(val_loader)
-        print('Epoch: {:04d}'.format(epoch + 1), 'loss_train: {:.6f}'.format(loss_train),
-              'acc_train: {:.6f}'.format(acc_train), 'loss_val: {:.6f}'.format(loss_val),
-              'acc_val: {:.6f}'.format(acc_val), 'time: {:.6f}s'.format(time.time() - t))
+        logger.info('Epoch: {:04d} loss_train: {:.6f} acc_train: {:.6f} loss_val: {:.6f} acc_val: {:.6f} time: {:.6f}s'.format(epoch + 1, loss_train, acc_train, loss_val, acc_val, time.time() - t))
 
         val_loss_values.append(loss_val)
         torch.save(model.state_dict(), 'weights/{}.pth'.format(epoch))
@@ -138,7 +139,7 @@ def train():
         epoch_nb = int(f[8:].split('.')[0])
         if epoch_nb > best_epoch:
             os.remove(f)
-    print('Optimization Finished! Total time elapsed: {:.6f}'.format(time.time() - t))
+    logger.info('Optimization Finished! Total time elapsed: {:.6f}'.format(time.time() - t))
 
     return best_epoch
 
