@@ -117,17 +117,17 @@ class UcfHmdb(data.Dataset):
         print('Make {} dataset ({} clips)'.format(
             self._dataset_name, len(self._data)))
 
+    # def __getitem__(self, index):
+    #     for _ in range(self._num_retries):
+    #         if self._testing:
+    #             target = self._data[index]['video_id']
+    #         else:
+    #             target = self._data[index]['label']
+    #         frames = torch.load(f"dataraw/UCF-101/pt/{self._data[index]['video_id']}.pt")
+    #         return (frames, target, index)
+        
+        
     def __getitem__(self, index):
-        for _ in range(self._num_retries):
-            if self._testing:
-                target = self._data[index]['video_id']
-            else:
-                target = self._data[index]['label']
-            frames = torch.load(f"dataraw/UCF-101/pt/{self._data[index]['video_id']}.pt")
-            return (frames, target, index)
-        
-        
-    def __getitem_old__(self, index):
         """
         Args:
             index (int): Index
@@ -248,7 +248,7 @@ class UcfHmdb(data.Dataset):
 
 if __name__ == '__main__':
     video_path = 'dataraw/UCF-101/video'
-    dataset_file = 'dataraw/UCF-101/ucf101_01.json'
+    dataset_file = 'dataraw/UCF-101/ucf101_2_class.json'
     sample_duration = 64
     stride_size = 4
     sample_size = 224

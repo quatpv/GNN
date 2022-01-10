@@ -3,7 +3,7 @@ import torch.nn.functional as F
 import torch.nn as nn
 from torch_geometric.nn import global_mean_pool as gap, global_max_pool as gmp
 from torch_geometric.nn import GCNConv
-from efficientnet_pytorch import EfficientNet
+import timm
 from torch_geometric.data import Data
 import numpy as np
 
@@ -26,7 +26,9 @@ class Model(torch.nn.Module):
         self.lamb = args.lamb
         self.fc_channels = 1280*7*7
 
-        self.cnn = EfficientNet.from_pretrained('efficientnet-b0')
+        self.pretrain = timm.create_model('efficientnet_b0', pretrained=True)
+        self.cnn = nn.Sequential(*list(self.pretrain.children())[:-2])
+
         self.conv1 = GCNConv(self.num_features, self.nhid)
         self.conv2 = GCN(self.nhid, self.nhid)
         self.conv3 = GCN(self.nhid, self.nhid)
@@ -55,7 +57,7 @@ class Model(torch.nn.Module):
         # extract feature from data
         data = data.permute(0, 2, 1, 3, 4)
         data = data.flatten(start_dim=0, end_dim=1)
-        data = self.cnn.extract_features(data)
+        data = self.cnn(data)
         data = data.view(data.size()[0], -1)
         data = self.lin0(data)
 

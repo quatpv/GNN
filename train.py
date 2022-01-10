@@ -40,7 +40,7 @@ parser.add_argument('--num_features', type=int, default=512, help='number of fea
 
 # For video streaming
 parser.add_argument('--video_path', type=str, default='dataraw/UCF-101/video', help='path to video file')
-parser.add_argument('--dataset_file', type=str, default='dataraw/UCF-101/ucf101_01.json', help='train/val split')
+parser.add_argument('--dataset_file', type=str, default='dataraw/UCF-101/ucf101_2_class.json', help='train/val split')
 parser.add_argument('--sample_duration', type=int, default=64, help='temporal duration of inputs')
 parser.add_argument('--stride_size', type=int, default=4, help='temporal stride of inputs')
 parser.add_argument('--sample_size', type=int, default=224, help='height and width of inputs')
