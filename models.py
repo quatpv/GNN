@@ -8,6 +8,7 @@ from torch_geometric.data import Data
 import numpy as np
 
 from layers import GCN, HGPSLPool
+from utils.build_graph import BuildGraph
 
 
 class Model(torch.nn.Module):
@@ -42,8 +43,19 @@ class Model(torch.nn.Module):
         self.lin3 = torch.nn.Linear(self.nhid // 2, self.num_classes)
 
     def build_graph(self, data):
-        source = torch.tensor(np.array([np.array(range(self.num_nodes)) + i*self.num_nodes for i in range(self.args.batch_size)]))
-        destination = source + 1
+        source = np.array([], dtype=np.int)
+        destination = np.array([], dtype=np.int)
+
+        for graph_id in range(self.args.batch_size):
+            start_index = graph_id * self.num_nodes
+            build_graph = BuildGraph(self.num_nodes, start_index)
+            [s, d] = build_graph.font_dense_graph()
+            source = np.append(source, s)
+            destination = np.append(destination, d)
+
+        source = torch.tensor(source)
+        destination = torch.tensor(destination)
+        
         source = source.view(-1).tolist()[:-1]
         destination = destination.view(-1).tolist()[:-1]
 
